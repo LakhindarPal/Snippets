@@ -44,7 +44,10 @@ export default {
       if (!result || !result.value || !result.metadata)
         return Response.redirect(url404);
       const { title, lexer, expiresAt } = result.metadata;
-      const code = result.value;
+      const code = result.value.replace(
+        /[&<>"']/g,
+        (m) => `&#${m.charCodeAt(0)};`
+      );
       const html = DisplayPage({ title, slug, code, lexer, expiresAt });
       return new Response(html, {
         headers: {
