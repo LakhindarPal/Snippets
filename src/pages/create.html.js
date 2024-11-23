@@ -235,9 +235,9 @@ export default function CreatePage({ title, code, lexer }) {
             </select>
           </div>
 
-          <div class="form-expiry">
-            <label for="id_expiry">Expires</label>
-            <select name="expiry" id="id_expiry" required>
+          <div class="form-ttl">
+            <label for="id_ttl">Expires</label>
+            <select name="ttl" id="id_ttl" required>
               <!-- <option value="onetime">after one visit</option> -->
               <option value="3600" selected>in one hour</option>
               <option value="86400">in one day</option>

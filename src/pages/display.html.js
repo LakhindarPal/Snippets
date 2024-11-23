@@ -1,4 +1,4 @@
-export default function DisplayPage({ title, code, slug, lexer, expiresAt }) {
+export default function DisplayPage({ title, code, slug, lexer, expiry }) {
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -113,7 +113,7 @@ export default function DisplayPage({ title, code, slug, lexer, expiresAt }) {
     <main>
       <div class="info-wrapper">
         <h2 id="id_title">${title}</h2>
-        <p>Expires in ${expiresAt}</p>
+        <p>Expires in <span id="id_expiry">${expiry}</span></p>
       </div>
 
       <menu class="snippet-options">
@@ -174,6 +174,14 @@ export default function DisplayPage({ title, code, slug, lexer, expiresAt }) {
     </footer>
 
     <script>
+      const expiryEl = document.querySelector("#id_expiry");
+      expiryEl.textContent = new Date(Number(expiryEl.textContent)).toLocaleString(navigator.language, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric"
+      });
+
       const content = document.querySelector("pre code").textContent;
       const copyBtn = document.querySelector("#btn_copy");
       const shareBtn = document.querySelector("#btn_share");
@@ -189,18 +197,14 @@ export default function DisplayPage({ title, code, slug, lexer, expiresAt }) {
       });
 
       shareBtn.addEventListener("click", async () => {
-        if (!navigator.canShare) {
+        const data = {
+          title: document.title.split(" | Snippets ")[0],
+          url: window.location.href,
+        };
+        if (!navigator.share || !navigator.canShare(data)) {
           return alert("Your device or browser doesn't support sharing.");
         }
-
-        try {
-          await navigator.share({
-            title: document.title.split(" | Snippets ")[0],
-            url: window.location.href,
-          });
-        } catch (e) {
-          console.error(e);
-        }
+        await navigator.share(data);
       });
     </script>
   </body>

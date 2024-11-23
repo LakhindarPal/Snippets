@@ -3,7 +3,7 @@ import DisplayPage from "./pages/display.html.js";
 import NotfoundPage from "./pages/notfound.html.js";
 
 export default {
-  async fetch(req, env, ctx) {
+  async fetch(req, env) {
     const url = new URL(req.url);
     const pathname = url.pathname;
     const url404 = new URL("/404", req.url);
@@ -21,20 +21,12 @@ export default {
       const title = data.get("title");
       const code = data.get("code");
       const lexer = data.get("lexer");
-      const expirationTtl = Number(data.get("expiry"));
-      const expiresAt = new Date(
-        Date.now() + expirationTtl * 1000
-      ).toLocaleString("en-IN", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      });
+      const expirationTtl = Number(data.get("ttl"));
+      const expiry = Date.now() + expirationTtl * 1000;
       const slug = crypto.randomUUID().split("-")[0];
       await env.SnippetsKV.put(slug, code, {
         expirationTtl,
-        metadata: { title, lexer, expiresAt },
+        metadata: { title, lexer, expiry },
       }).catch((e) => console.error(e));
       const snippetUrl = new URL(slug, req.url);
       return Response.redirect(snippetUrl);
@@ -43,12 +35,12 @@ export default {
       const result = await env.SnippetsKV.getWithMetadata(slug);
       if (!result || !result.value || !result.metadata)
         return Response.redirect(url404);
-      const { title, lexer, expiresAt } = result.metadata;
+      const { title, lexer, expiry } = result.metadata;
       const code = result.value.replace(
         /[&<>"']/g,
         (m) => `&#${m.charCodeAt(0)};`
       );
-      const html = DisplayPage({ title, slug, code, lexer, expiresAt });
+      const html = DisplayPage({ title, slug, code, lexer, expiry });
       return new Response(html, {
         headers: {
           "content-type": "text/html;charset=utf-8",
